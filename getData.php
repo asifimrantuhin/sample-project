@@ -46,7 +46,8 @@ if(isset($_POST['page'])){
         'totalRows' => $rowCount, 
         'perPage' => $limit, 
         'currentPage' => $offset, 
-        'contentDiv' => 'dataContainer' 
+        'contentDiv' => 'dataContainer',
+        'filterFunction'    => 'searchFilter'
     ); 
     $pagination =  new Pagination($pagConfig); 
  

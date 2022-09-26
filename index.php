@@ -1,33 +1,56 @@
 <?php 
 include "inc/header.php";
-
 include("config.php");
 
-$query = "SELECT 
+$sql = "SELECT 
  SUM(IF(pl> 0,pl,0)) AS profit,
  SUM(IF(pl< 0,pl,0)) AS loss,
  DATE_ADD( DATE(DATETIME), INTERVAL (1 - DAYOFWEEK(DATETIME )) DAY) week_start,
  DATE_ADD( DATE(DATETIME), INTERVAL (7 - DAYOFWEEK(DATETIME )) DAY) week_ending
 FROM order_history
-GROUP BY week_ending;";
+GROUP BY week_ending";
+$query 	= $conn->query($sql);
+$query1 	= $conn->query($sql);
 
-$statement 	= $conn->query($query);
-$results 	= $statement->fetch_assoc(); 
+$query2   = $conn->query("SELECT  SUM(IF(pl> 0,pl,0)) AS profit,  SUM(IF(pl< 0,pl,0)) AS loss FROM order_history"); 
+$lifetimeSummery  = $query2->fetch_assoc(); 
+
+$labelStr = "";
+$profitStr = "";
+$lossStr = "";
+while($row = $query1->fetch_assoc()){
+    $labelStr .= "'".date('d/m/Y', strtotime($row['week_start'])).'-'.date('d/m/Y', strtotime($row['week_ending']))."', ";
+    $profitStr .= $row['profit'].",";
+	$lossStr .= $row['loss'].",";
+}
+$labelStr = rtrim($labelStr, ",");
+$profitStr = rtrim($profitStr, ",");
+$lossStr = rtrim($lossStr, ",");
 
 
+
+$curr_sql = "SELECT c.currency_name, 
+ SUM(IF(oh.pl> 0,oh.pl,0)) AS profit,
+ SUM(IF(oh.pl< 0,oh.pl,0)) AS loss,
+ SUM(IF(oh.pl=0,oh.pl,0)) AS level_zero
+FROM order_history oh
+JOIN `currency` c ON c.id = oh.currency
+GROUP BY oh.currency";
+$curr_query 	= $conn->query($curr_sql);
 
 ?>
+
+
 <script src="https://www.gstatic.com/charts/loader.js"></script>
 <script>
   google.charts.load('current', {packages: ['corechart']});
   google.charts.setOnLoadCallback(drawChart);
 
   function drawChart() {
-
         var data = google.visualization.arrayToDataTable([
           ['Status', 'Amount'],
-          ['Profit',     111],
-          ['Loss',      22]
+          ['Profit',   <?php echo $lifetimeSummery['profit'];?>],
+          ['Loss',     <?php echo abs($lifetimeSummery['loss']);?>]
         ]);
 
         var options = {
@@ -37,11 +60,6 @@ $results 	= $statement->fetch_assoc();
         var chart = new google.visualization.PieChart(document.getElementById('piechart'));
 
         chart.draw(data, options);
-
-
-
-
-
       }
 
 </script>
@@ -72,7 +90,7 @@ $results 	= $statement->fetch_assoc();
               </div>
             </div>
           </div>
-          <!-- <div class="row">
+           <div class="row">
             <div class="col-md-6 grid-margin stretch-card">
               <div class="card tale-bg">
                 <div class="card-people mt-auto">
@@ -96,18 +114,18 @@ $results 	= $statement->fetch_assoc();
                 <div class="col-md-6 mb-4 stretch-card transparent">
                   <div class="card card-tale">
                     <div class="card-body">
-                      <p class="mb-4">Today’s Bookings</p>
-                      <p class="fs-30 mb-2">4006</p>
-                      <p>10.00% (30 days)</p>
+                      <p class="mb-4">Profit</p>
+                      <p class="fs-30 mb-2"><?php echo $lifetimeSummery['profit'];?></p>
+                      <p>Lifetime</p>
                     </div>
                   </div>
                 </div>
                 <div class="col-md-6 mb-4 stretch-card transparent">
                   <div class="card card-dark-blue">
                     <div class="card-body">
-                      <p class="mb-4">Total Bookings</p>
-                      <p class="fs-30 mb-2">61344</p>
-                      <p>22.00% (30 days)</p>
+                      <p class="mb-4">Loss</p>
+                      <p class="fs-30 mb-2"><?php echo abs($lifetimeSummery['loss']);?></p>
+                      <p>Lifetime</p>
                     </div>
                   </div>
                 </div>
@@ -133,39 +151,27 @@ $results 	= $statement->fetch_assoc();
                 </div>
               </div>
             </div>
-          </div> -->
+          </div> 
           <div class="row">
             <div class="col-md-6 grid-margin stretch-card">
               <div class="card grid-margin stretch-card">
                 <div class="card-body">
                    <div class="row">
 	                <div class="col-12 col-xl-6 mb-4 mb-xl-0">
-	                  <h4 class="font-weight-bold">Revenue Status</h4>
+	                  <h4 class="font-weight-bold">Total Revenue Status</h4>
 	                  
 	                </div>
-	                <div class="col-12 col-xl-6">
-	                 
-	                  <!-- <div class="form-group" style="width:100%"> -->
-	                    <select class="js-example-basic-single">
-	                      <option value="AL">Alabama Alabama</option>
-	                      <option value="WY">Wyoming Wyoming</option>
-	                      <option value="AM">America</option>
-	                      <option value="CA">Canada</option>
-	                      <option value="RU">Russia</option>
-	                    </select>
-	                  <!-- </div> -->
-	                 
-	                </div>
+	                
 	              </div>
                   
                   <div class="row mb-5">
                     <div class="col-lg-6 col-md-6 col-sm-6 mt-3">
                       <p class="text-muted">Profit</p>
-                      <h3 class="text-primary fs-30 font-weight-medium">12.3k</h3>
+                      <h3 class="text-primary fs-30 font-weight-medium"><?php echo $lifetimeSummery['profit'];?></h3>
                     </div>
                     <div class="col-lg-6 col-md-6 col-sm-6 mt-3">
                       <p class="text-muted">Loss</p>
-                      <h3 class="text-primary fs-30 font-weight-medium">14k</h3>
+                      <h3 class="text-primary fs-30 font-weight-medium"><?php echo $lifetimeSummery['loss'];?></h3>
                     </div>
                      
                   </div>
@@ -176,11 +182,28 @@ $results 	= $statement->fetch_assoc();
             <div class="col-md-6 grid-margin stretch-card">
               <div class="card">
                 <div class="card-body">
-                 <div class="d-flex justify-content-between">
-                  <p class="card-title">Sales Report</p>
-                  <a href="#" class="text-info">View all</a>
-                 </div>
-                  <p class="font-weight-500">The total number of sessions within the date range. It is the period time a user is actively engaged with your website, page or app, etc</p>
+                 <div class="row">
+	                <div class="col-12 col-xl-6 mb-4 mb-xl-0">
+	                  <h4 class="font-weight-bold">Revenue by Weekly</h4>
+	                  
+	                </div>
+	                <div class="col-12 col-xl-6">
+	                 
+	                  <!-- <div class="form-group" style="width:100%"> -->
+	                    <select class="js-example-basic-single" onchange="weeklyPieChartChange(this.value)" placeholder="Select Week">
+	                    	<option disabled selected>Select by week</option>
+	                      <?php
+                            while($row = $query->fetch_assoc()){
+                            
+                                echo '<option value="'.date('d/m/Y', strtotime($row['week_start'])).'-'.date('d/m/Y', strtotime($row['week_ending'])).'">'.date('d/m/Y', strtotime($row['week_start'])).' to '.date('d/m/Y', strtotime($row['week_ending'])).'</option>';
+                            }
+                            ?>
+	                    </select>
+	                  <!-- </div> -->
+	                 
+	                </div>
+	              </div>
+                  
                   <div id="sales-legend" class="chartjs-legend mt-4 mb-2"></div>
                   <canvas id="sales-chart"></canvas>
                 </div>
@@ -721,3 +744,163 @@ $results 	= $statement->fetch_assoc();
 <?php 
 include "inc/footer.php";
 ?>
+
+<script type="text/javascript">
+google.charts.load('current', {packages: ['corechart', 'bar']});
+google.charts.setOnLoadCallback();
+
+
+function weeklyPieChartChange(daterange)
+{
+
+    $.ajax({
+        url:"datafetch.php",
+        method:"POST",
+        data:{daterange:daterange},
+        dataType:"JSON",
+        success:function(data)
+        {
+            drawMonthwiseChart(data, temp_title);
+        }
+    });
+
+}
+
+
+function load_monthwise_data(year, title)
+{
+    var temp_title = title + ' '+year+'';
+    $.ajax({
+        url:"fetch.php",
+        method:"POST",
+        data:{year:year},
+        dataType:"JSON",
+        success:function(data)
+        {
+            drawMonthwiseChart(data, temp_title);
+        }
+    });
+}
+
+function drawMonthwiseChart(chart_data, chart_main_title)
+{
+    var jsonData = chart_data;
+    var data = new google.visualization.DataTable();
+    data.addColumn('string', 'Month');
+    data.addColumn('number', 'Profit');
+    $.each(jsonData, function(i, jsonData){
+        var month = jsonData.month;
+        var profit = parseFloat($.trim(jsonData.profit));
+        data.addRows([[month, profit]]);
+    });
+    var options = {
+        title:chart_main_title,
+        hAxis: {
+            title: "Months"
+        },
+        vAxis: {
+            title: 'Profit'
+        }
+    };
+
+    var chart = new google.visualization.ColumnChart(document.getElementById('chart_area'));
+    chart.draw(data, options);
+}
+
+</script>
+
+
+
+
+<script>
+    
+$(document).ready(function(){
+
+    
+    if ($("#sales-chart").length) {
+      var SalesChartCanvas = $("#sales-chart").get(0).getContext("2d");
+      var SalesChart = new Chart(SalesChartCanvas, {
+        type: 'bar',
+        data: {
+          labels: [<?php echo $labelStr;?>],
+          datasets: [{
+              label: 'Profit',
+              data: [<?php echo $profitStr;?>],
+              backgroundColor: '#98BDFF'
+            },
+            {
+              label: 'Loss',
+              data: [<?php echo $lossStr;?>],
+              backgroundColor: '#4B49AC'
+            }
+          ]
+        },
+        options: {
+          cornerRadius: 5,
+          responsive: true,
+          maintainAspectRatio: true,
+          layout: {
+            padding: {
+              left: 0,
+              right: 0,
+              top: 20,
+              bottom: 0
+            }
+          },
+          scales: {
+            yAxes: [{
+              display: true,
+              gridLines: {
+                display: true,
+                drawBorder: false,
+                color: "#F2F2F2"
+              },
+              ticks: {
+                display: true,
+                min: 0,
+                max: 560,
+                callback: function(value, index, values) {
+                  return  value + '$' ;
+                },
+                autoSkip: true,
+                maxTicksLimit: 10,
+                fontColor:"#6C7383"
+              }
+            }],
+            xAxes: [{
+              stacked: false,
+              ticks: {
+                beginAtZero: true,
+                fontColor: "#6C7383"
+              },
+              gridLines: {
+                color: "rgba(0, 0, 0, 0)",
+                display: false
+              },
+              barPercentage: 1
+            }]
+          },
+          legend: {
+            display: false
+          },
+          elements: {
+            point: {
+              radius: 0
+            }
+          }
+        },
+      });
+      document.getElementById('sales-legend').innerHTML = SalesChart.generateLegend();
+    }
+
+
+
+
+});
+
+
+
+</script>
+
+
+weeklyPieChartChange

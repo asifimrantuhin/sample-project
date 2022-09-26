@@ -7,7 +7,7 @@ if(isset($_POST['page'])){
     require_once 'config.php';
      
 
-    $baseURL = 'get_order_history.php'; 
+    $baseURL = 'get_order_history_one.php';
     $offset = !empty($_POST['page'])?$_POST['page']:0; 
     $limit = 5; 
 
@@ -49,8 +49,8 @@ if(isset($_POST['page'])){
         'totalRows' => $rowCount, 
         'perPage' => $limit, 
         'currentPage' => $offset, 
-        'contentDiv' => 'dataContainer',
-        'filterFunction'    => 'searchFilterOrderHistory'
+        'contentDiv' => 'dataContainerOne',
+        'filterFunction'    => 'searchFilterOrderHistoryOne'
     ); 
     $pagination =  new Pagination($pagConfig); 
  
@@ -65,7 +65,7 @@ if(isset($_POST['page'])){
 
 ?> 
     <!-- Data list container --> 
-    <table class="table table-bordered mb-2" >
+    <table class="table table-hover" >
         <thead>
         <tr class="customize-header">
             <th>SL</th>
@@ -81,12 +81,12 @@ if(isset($_POST['page'])){
             <th>Comment</th>
         </tr>
         </thead>
-        <tbody id="dataContainer">
+        <tbody id="dataContainerOne">
         <?php
         if($query->num_rows > 0){ $i=0;
             while($row = $query->fetch_assoc()){ $i++;
                 ?>
-                <tr class="table-<?php echo ($row["pl"] > 0 ? 'success' : 'danger'); ?>">
+                <tr>
                     <td><?php echo $i; ?></td>
                     <td><?php echo date("Y-m-d", strtotime($row["datetime"])); ?></td>
                     <td><?php echo $row["type_name"]; ?></td>
@@ -98,6 +98,17 @@ if(isset($_POST['page'])){
                     <td><?php echo $row["bid"]; ?></td>
                     <td><?php echo $row["ask"]; ?></td>
                     <td><?php echo $row["comment"]; ?></td>
+                    <td>
+                        <?php
+                        if($row['pl'] > 0 ) {
+                            echo '<label class="badge badge-success">Profit</label>';
+                        }elseif($row['pl'] < 0 ) {
+                            echo '<label class="badge badge-danger">Loss</label>';
+                        }else {
+                            echo '<label class="badge badge-warning">B/E</label>';
+                        }
+                        ?>
+                    </td>
 
                 </tr>
 

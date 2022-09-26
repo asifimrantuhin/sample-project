@@ -1,6 +1,7 @@
 <?php 
 class Pagination{ 
-    var $baseURL        = ''; 
+    var $baseURL        = '';
+    var $filterFunction  = '';
     var $totalRows      = ''; 
     var $perPage         = 10; 
     var $numLinks        =  2; 
@@ -112,7 +113,7 @@ class Pagination{
         // Render the "First" link 
         if  ($this->currentPage > $this->numLinks){ 
             $output .= $this->firstTagOpen  
-                . $this->getAJAXlink( '' , $this->firstLink) 
+                . $this->getAJAXlink( '' , $this->firstLink, $this->filterFunction)
                 . $this->firstTagClose;  
         } 
  
@@ -121,7 +122,7 @@ class Pagination{
             $i = $uriPageNum - $this->perPage; 
             if ($i == 0) $i = ''; 
             $output .= $this->prevTagOpen  
-                . $this->getAJAXlink( $i, $this->prevLink ) 
+                . $this->getAJAXlink( $i, $this->prevLink, $this->filterFunction )
                 . $this->prevTagClose; 
         } 
  
@@ -135,7 +136,7 @@ class Pagination{
                 }else{ 
                     $n = ($i == 0) ? '' : $i; 
                     $output .= $this->numTagOpen 
-                        . $this->getAJAXlink( $n, $loop ) 
+                        . $this->getAJAXlink( $n, $loop, $this->filterFunction )
                         . $this->numTagClose; 
                 } 
             } 
@@ -144,14 +145,14 @@ class Pagination{
         // Render the "next" link 
         if ($this->currentPage < $numPages){ 
             $output .= $this->nextTagOpen  
-                . $this->getAJAXlink( $this->currentPage * $this->perPage , $this->nextLink ) 
+                . $this->getAJAXlink( $this->currentPage * $this->perPage , $this->nextLink, $this->filterFunction )
                 . $this->nextTagClose; 
         } 
  
         // Render the "Last" link 
         if (($this->currentPage + $this->numLinks) < $numPages){ 
             $i = (($numPages * $this->perPage) - $this->perPage); 
-            $output .= $this->lastTagOpen . $this->getAJAXlink( $i, $this->lastLink ) . $this->lastTagClose; 
+            $output .= $this->lastTagOpen . $this->getAJAXlink( $i, $this->lastLink, $this->filterFunction ) . $this->lastTagClose;
         } 
  
         // Remove double slashes 
@@ -163,16 +164,16 @@ class Pagination{
         return $output;         
     } 
  
-    function getAJAXlink( $count, $text) { 
+    function getAJAXlink( $count, $text, $filterFunction='') {
         if( $this->contentDiv == '') 
             //return '<a href="'. $this->anchorClass . ' ' . $this->baseURL . $count . '">'. $text .'</a>'; 
-            return '<li class="paginate_button page-item"><a class="page-link" href="javascript::void(0)" onclick="searchFilter('.$count.')">'. $text .'</a></li>'; 
+            return '<li class="paginate_button page-item"><a class="page-link" href="javascript::void(0)" onclick="'.$filterFunction.'('.$count.')">'. $text .'</a></li>';
  
         $pageCount = $count?$count:0; 
         $this->additionalParam = "{'page' : $pageCount}"; 
 
 
-        return '<li class="paginate_button page-item"><a class="page-link" href="javascript::void(0)" onclick="searchFilter('.$pageCount.')">'. $text .'</a></li>';
+        return '<li class="paginate_button page-item"><a class="page-link" href="javascript::void(0)" onclick="'.$filterFunction.'('.$pageCount.')">'. $text .'</a></li>';
          
         // return "<a href=\"javascript:void(0);\" " . $this->anchorClass . " 
         //         onclick=\"$.post('". $this->baseURL."', ". $this->additionalParam .", function(data){ 

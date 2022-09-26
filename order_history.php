@@ -7,10 +7,14 @@ require_once 'config.php';
  
 // Set some useful configuration 
 $baseURL = 'get_order_history.php'; 
-$limit = 5; 
+$baseURLOne = 'get_order_history_one.php';
+$limit = 5;
  
 // Count of all records 
-$query   = $conn->query("SELECT COUNT(*) as rowNum FROM order_history"); 
+$query   = $conn->query("SELECT COUNT(*) as rowNum FROM order_history oh
+ LEFT JOIN order_type ot ON ot.id = oh.type 
+ LEFT JOIN currency cu ON cu.id = oh.currency
+ ");
 $result  = $query->fetch_assoc(); 
 $rowCount= $result['rowNum']; 
  
@@ -19,12 +23,37 @@ $pagConfig = array(
     'baseURL' => $baseURL, 
     'totalRows' => $rowCount, 
     'perPage' => $limit, 
-    'contentDiv' => 'dataContainer' 
-); 
+    'contentDiv' => 'dataContainer',
+    'filterFunction'    => 'searchFilterOrderHistory'
+);
+
+$pagConfig1 = array(
+    'baseURL' => $baseURLOne,
+    'totalRows' => $rowCount,
+    'perPage' => $limit,
+    'contentDiv' => 'dataContainerOne',
+    'filterFunction'    => 'searchFilterOrderHistoryOne'
+);
 $pagination =  new Pagination($pagConfig); 
- 
-// Fetch records based on the limit 
-$query = $conn->query("SELECT * FROM order_history ORDER BY id ASC LIMIT $limit");
+$pagination1 =  new Pagination($pagConfig1);
+
+// Fetch records based on the limit
+$sql_query = "SELECT oh.*, ot.order_type as type_name, cu.currency_name FROM order_history oh
+ LEFT JOIN order_type ot ON ot.id = oh.type 
+ LEFT JOIN currency cu ON cu.id = oh.currency
+ ORDER BY id ASC LIMIT $limit";
+$query = $conn->query($sql_query);
+$query1 = $conn->query($sql_query);
+
+/** Order Type Data */
+$sql_type = "SELECT * FROM order_type ORDER BY order_type ASC";
+$type_query = $conn->query($sql_type);
+
+/** currency Data */
+$sql_currency = "SELECT * FROM currency ORDER BY currency_name ASC";
+$currency_query = $conn->query($sql_currency);
+
+
 include "inc/header.php"; 
 ?>
 
@@ -51,7 +80,7 @@ include "inc/header.php";
                             <div class="col-lg-12 stretch-card grid-margin">
                               <div class="card">
                                 <div class="card-body">
-                                  <h4 class="card-title">Data List</h4>
+                                  <h4 class="card-title">Order History List</h4>
                                   <div class="row">
                                       <div class="col-sm-3">
                                         <input type="date" class="form-control mb-2 mr-sm-2" id="fromdate" placeholder="Fromdate">
@@ -60,16 +89,35 @@ include "inc/header.php";
                                         <input type="date" class="form-control mb-2 mr-sm-2" id="todate" placeholder="Todate">
                                       </div>
                                       <div class="col-sm-2">
-                                        <input type="text" class="form-control mb-2 mr-sm-2" id="accountname" placeholder="Account">
+                                          <input type="text" class="form-control mb-2 mr-sm-2" id="profitloss" placeholder="Profitloss">
                                       </div>
                                       <div class="col-sm-2">
-                                        <input type="text" class="form-control mb-2 mr-sm-2" id="botname" placeholder="Botname">
+<!--                                        <select class="js-example-basic-single w-100" data-placeholder="Order Type">-->
+                                        <select class="js-example-basic-single w-100" id="type_id">
+                                            <option value="">Order Type</option>
+                                            <?php
+                                                if($type_query->num_rows > 0) {
+                                                    while ($row = $type_query->fetch_assoc()) {
+                                                        echo '<option value="'.$row['id'].'">'.$row['order_type'].'</option>';
+                                                    }
+                                                }
+                                            ?>
+                                        </select>
                                       </div>
                                       <div class="col-sm-2">
-                                        <input type="text" class="form-control mb-2 mr-sm-2" id="profitloss" placeholder="Profitloss">
+                                          <select class="js-example-basic-single w-100" id="currency_id">
+                                              <option value="">Currency</option>
+                                              <?php
+                                              if($currency_query->num_rows > 0) {
+                                                  while ($row = $currency_query->fetch_assoc()) {
+                                                      echo '<option value="'.$row['id'].'">'.$row['currency_name'].'</option>';
+                                                  }
+                                              }
+                                              ?>
+                                          </select>
                                       </div>
                                       <div class="col-sm-2">
-                                        <button type="submit" class="btn btn-sm btn-dark btn-block mb-2" onclick="searchFilter(0)">Submit</button>
+                                        <button type="submit" class="btn btn-sm btn-dark btn-block mb-2" onclick="searchFilterOrderHistory(0)">Submit</button>
                                       </div>
                                   </div>
                                   <div class="table-responsive pt-3 " id="dataContainer">
@@ -78,9 +126,15 @@ include "inc/header.php";
                                         <tr class="customize-header">
                                             <th>SL</th>
                                             <th>Date</th>
-                                            <th>Account</th>
-                                            <th>Botname</th>
+                                            <th>Type</th>
+                                            <th>Currency</th>
+                                            <th>Units</th>
+                                            <th>Price</th>
                                             <th>ProfitLoss</th>
+                                            <th>H.S Cost</th>
+                                            <th>Bid</th>
+                                            <th>Ask</th>
+                                            <th>Comment</th>
                                         </tr>
                                       </thead>
                                       <tbody id="dataContainer">
@@ -88,19 +142,25 @@ include "inc/header.php";
                                         if($query->num_rows > 0){ $i=0; 
                                             while($row = $query->fetch_assoc()){ $i++; 
                                         ?>
-                                        <tr class="table-<?php echo ($row["profit_loss"] > 0 ? 'success' : 'danger'); ?>">
+                                        <tr class="table-<?php echo ($row["pl"] > 0 ? 'success' : 'danger'); ?>">
                                           <td><?php echo $i; ?></td>
                                           <td><?php echo date("Y-m-d", strtotime($row["datetime"])); ?></td>
-                                          <td><?php echo $row["account"]; ?></td>
-                                          <td><?php echo $row["botname"]; ?></td>
-                                          <td><?php echo $row["profit_loss"]; ?></td>
-                                          
+                                          <td><?php echo $row["type_name"]; ?></td>
+                                          <td><?php echo $row["currency_name"]; ?></td>
+                                          <td><?php echo $row["units"]; ?></td>
+                                          <td><?php echo $row["price"]; ?></td>
+                                          <td><?php echo $row["pl"]; ?></td>
+                                          <td><?php echo $row["halfspreadcost"]; ?></td>
+                                          <td><?php echo $row["bid"]; ?></td>
+                                          <td><?php echo $row["ask"]; ?></td>
+                                          <td><?php echo $row["comment"]; ?></td>
+
                                         </tr>
                                             
                                         <?php 
                                             } 
                                         }else{ 
-                                            echo '<tr><td colspan="5">No records found...</td></tr>'; 
+                                            echo '<tr><td colspan="11">No records found...</td></tr>';
                                         } 
                                         ?>
 
@@ -118,23 +178,29 @@ include "inc/header.php";
                             <div class="col-md-12 grid-margin stretch-card">
                                 <div class="card">
                                     <div class="card-body">
-                                        <p class="card-title">Data Table</p>
+                                        <p class="card-title">Order History List</p>
                                         <div class="row">
                                             <div class="col-12">
                                                 <div class="table-responsive">
                                                 	
 
 
-                                                    <table id="example" class="display expandable-table" style="width:100%">
+                                                    <table id="orderHistory" class="display expandable-table" style="width:100%">
                                                         <thead>
                                                              
                                                             
                                                         
                                                         	<tr>
-                                                        		<th>DateTime</th>
-                                                        		<th>Account</th>
-                                                        		<th>Botname</th>
-                                                        		<th>ProfitLoss</th>
+                                                                <th>Date</th>
+                                                                <th>Type</th>
+                                                                <th>Currency</th>
+                                                                <th>Units</th>
+                                                                <th>Price</th>
+                                                                <th>ProfitLoss</th>
+                                                                <th>H.S Cost</th>
+                                                                <th>Bid</th>
+                                                                <th>Ask</th>
+                                                                <th>Comment</th>
                                                         	</tr>
                                                         </thead>
                                                     </table>
@@ -144,6 +210,107 @@ include "inc/header.php";
                                     </div>
                                 </div>
                             </div>
+
+
+                            <div class="col-md-12 grid-margin stretch-card">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h4 class="card-title">Order History List Hover</h4>
+                                        <div class="table-responsive" id="dataContainerOne">
+                                            <table class="table table-hover">
+                                                <thead>
+                                                <tr>
+                                                    <th>SL</th>
+                                                    <th>Date</th>
+                                                    <th>Type</th>
+                                                    <th>Currency</th>
+                                                    <th>Units</th>
+                                                    <th>Price</th>
+                                                    <th>ProfitLoss</th>
+                                                    <th>H.S Cost</th>
+                                                    <th>Bid</th>
+                                                    <th>Ask</th>
+                                                    <th>Comment</th>
+                                                    <th>Status</th>
+                                                </tr>
+                                                </thead>
+                                                <tbody id="dataContainerOne">
+                                                <?php
+                                                    if($query1->num_rows > 0){ $i=0;
+                                                        while($row = $query1->fetch_assoc()){ $i++;
+                                                            ?>
+                                                            <tr>
+                                                                <td><?php echo $i; ?></td>
+                                                                <td><?php echo date("Y-m-d", strtotime($row["datetime"])); ?></td>
+                                                                <td><?php echo $row["type_name"]; ?></td>
+                                                                <td><?php echo $row["currency_name"]; ?></td>
+                                                                <td><?php echo $row["units"]; ?></td>
+                                                                <td><?php echo $row["price"]; ?></td>
+                                                                <td><?php echo $row["pl"]; ?></td>
+                                                                <td><?php echo $row["halfspreadcost"]; ?></td>
+                                                                <td><?php echo $row["bid"]; ?></td>
+                                                                <td><?php echo $row["ask"]; ?></td>
+                                                                <td><?php echo $row["comment"]; ?></td>
+                                                                <td>
+                                                                    <?php
+                                                                        if($row['pl'] > 0 ) {
+                                                                            echo '<label class="badge badge-success">Profit</label>';
+                                                                        }elseif($row['pl'] < 0 ) {
+                                                                            echo '<label class="badge badge-danger">Loss</label>';
+                                                                        }else {
+                                                                            echo '<label class="badge badge-warning">B/E</label>';
+                                                                        }
+                                                                    ?>
+                                                                </td>
+
+                                                            </tr>
+
+                                                            <?php
+                                                        }
+                                                    }else{
+                                                        echo '<tr><td colspan="12">No records found...</td></tr>';
+                                                    }
+                                                ?>
+
+<!--                                                <tr>-->
+<!--                                                    <td>Jacob</td>-->
+<!--                                                    <td>Photoshop</td>-->
+<!--                                                    <td class="text-danger"> 28.76% <i class="ti-arrow-down"></i></td>-->
+<!--                                                    <td><label class="badge badge-danger">Pending</label></td>-->
+<!--                                                </tr>-->
+<!--                                                <tr>-->
+<!--                                                    <td>Messsy</td>-->
+<!--                                                    <td>Flash</td>-->
+<!--                                                    <td class="text-danger"> 21.06% <i class="ti-arrow-down"></i></td>-->
+<!--                                                    <td><label class="badge badge-warning">In progress</label></td>-->
+<!--                                                </tr>-->
+<!--                                                <tr>-->
+<!--                                                    <td>John</td>-->
+<!--                                                    <td>Premier</td>-->
+<!--                                                    <td class="text-danger"> 35.00% <i class="ti-arrow-down"></i></td>-->
+<!--                                                    <td><label class="badge badge-info">Fixed</label></td>-->
+<!--                                                </tr>-->
+<!--                                                <tr>-->
+<!--                                                    <td>Peter</td>-->
+<!--                                                    <td>After effects</td>-->
+<!--                                                    <td class="text-success"> 82.00% <i class="ti-arrow-up"></i></td>-->
+<!--                                                    <td><label class="badge badge-success">Completed</label></td>-->
+<!--                                                </tr>-->
+<!--                                                <tr>-->
+<!--                                                    <td>Dave</td>-->
+<!--                                                    <td>53275535</td>-->
+<!--                                                    <td class="text-success"> 98.05% <i class="ti-arrow-up"></i></td>-->
+<!--                                                    <td><label class="badge badge-warning">In progress</label></td>-->
+<!--                                                </tr>-->
+                                                </tbody>
+                                            </table>
+                                            <hr>
+                                            <?php echo $pagination1->createLinks(); ?>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
                         </div>
                     </div>
                     <!-- content-wrapper ends -->

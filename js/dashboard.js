@@ -177,7 +177,7 @@
         options: areaOptions
       });
     }
-    if ($("#sales-chart").length) {
+    if ($("#sales-chart2").length) {
       var SalesChartCanvas = $("#sales-chart").get(0).getContext("2d");
       var SalesChart = new Chart(SalesChartCanvas, {
         type: 'bar',
@@ -678,7 +678,7 @@ $('#example tbody').on('click', 'td.details-control', function () {
   }
 } );
 
-var table2 = $('#dataTable').DataTable( {
+var table2 = $('#orderHistory').DataTable( {
     'processing': true,
     'serverSide': true,
     'serverMethod': 'post',
@@ -699,9 +699,15 @@ var table2 = $('#dataTable').DataTable( {
     },
     "columns": [
         { "data": "datetime" },
-        { "data": "account" },
-        { "data": "botname" },
-        { "data": "profit_loss" }
+        { "data": "type_name" },
+        { "data": "currency_name" },
+        { "data": "units" },
+        { "data": "price" },
+        { "data": "pl" },
+        { "data": "halfspreadcost" },
+        { "data": "bid" },
+        { "data": "ask" },
+        { "data": "comment" }
     ],
     "order": [[1, 'asc']],
     "paging":   true,

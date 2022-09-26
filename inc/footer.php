@@ -53,6 +53,63 @@
                     }
                 });
             }
+
+            function searchFilterOrderHistory(page) {
+                var limit =5;
+
+                var fromdate = $('#fromdate').val();
+                var todate = $('#todate').val();
+                var type_id = $('#type_id').val();
+                var currency_id = $('#currency_id').val();
+                var profitloss = $('#profitloss').val();
+
+                page_num = page?page:0;
+                limit = limit?limit:5;
+
+
+                $.ajax({
+                    type: 'POST',
+                    url: 'get_order_history.php',
+                    data:'fromdate='+fromdate+'&todate='+todate+'&type_id='+type_id+'&currency_id='+currency_id+'&profitloss='+profitloss+'&page='+page_num+'&limit='+limit,
+                    beforeSend: function () {
+                        $('.loading-overlay').show();
+                    },
+                    success: function (html) {
+                        $('#dataContainer').html(html);
+                        $('.loading-overlay').fadeOut("slow");
+                    }
+                });
+            }
+
+
+            function searchFilterOrderHistoryOne(page) {
+                var limit =5;
+
+                var fromdate = $('#fromdate').val();
+                var todate = $('#todate').val();
+                var type_id = $('#type_id').val();
+                var currency_id = $('#currency_id').val();
+                var profitloss = $('#profitloss').val();
+
+                page_num = page?page:0;
+                limit = limit?limit:5;
+
+
+                $.ajax({
+                    type: 'POST',
+                    url: 'get_order_history_one.php',
+                    data:'fromdate='+fromdate+'&todate='+todate+'&type_id='+type_id+'&currency_id='+currency_id+'&profitloss='+profitloss+'&page='+page_num+'&limit='+limit,
+                    beforeSend: function () {
+                        $('.loading-overlay').show();
+                    },
+                    success: function (html) {
+                        $('#dataContainerOne').html(html);
+                        $('.loading-overlay').fadeOut("slow");
+                    }
+                });
+            }
+
+            
         </script>
 
 

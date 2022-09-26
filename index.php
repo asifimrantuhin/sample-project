@@ -1,5 +1,21 @@
 <?php 
 include "inc/header.php";
+
+include("config.php");
+
+$query = "SELECT 
+ SUM(IF(pl> 0,pl,0)) AS profit,
+ SUM(IF(pl< 0,pl,0)) AS loss,
+ DATE_ADD( DATE(DATETIME), INTERVAL (1 - DAYOFWEEK(DATETIME )) DAY) week_start,
+ DATE_ADD( DATE(DATETIME), INTERVAL (7 - DAYOFWEEK(DATETIME )) DAY) week_ending
+FROM order_history
+GROUP BY week_ending;";
+
+$statement 	= $conn->query($query);
+$results 	= $statement->fetch_assoc(); 
+
+
+
 ?>
 <script src="https://www.gstatic.com/charts/loader.js"></script>
 <script>
@@ -120,9 +136,27 @@ include "inc/header.php";
           </div> -->
           <div class="row">
             <div class="col-md-6 grid-margin stretch-card">
-              <div class="card">
+              <div class="card grid-margin stretch-card">
                 <div class="card-body">
-                  <p class="card-title">Order History</p>
+                   <div class="row">
+	                <div class="col-12 col-xl-6 mb-4 mb-xl-0">
+	                  <h4 class="font-weight-bold">Revenue Status</h4>
+	                  
+	                </div>
+	                <div class="col-12 col-xl-6">
+	                 
+	                  <!-- <div class="form-group" style="width:100%"> -->
+	                    <select class="js-example-basic-single">
+	                      <option value="AL">Alabama Alabama</option>
+	                      <option value="WY">Wyoming Wyoming</option>
+	                      <option value="AM">America</option>
+	                      <option value="CA">Canada</option>
+	                      <option value="RU">Russia</option>
+	                    </select>
+	                  <!-- </div> -->
+	                 
+	                </div>
+	              </div>
                   
                   <div class="row mb-5">
                     <div class="col-lg-6 col-md-6 col-sm-6 mt-3">

@@ -4,7 +4,7 @@
         <!-- Required meta tags -->
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-        <title>Skydash Admin</title>
+        <title>Sample project</title>
         <!-- plugins:css -->
         <link rel="stylesheet" href="vendors/feather/feather.css">
         <link rel="stylesheet" href="vendors/ti-icons/css/themify-icons.css">
@@ -152,11 +152,30 @@
                 <nav class="sidebar sidebar-offcanvas" id="sidebar">
                     <ul class="nav">
                         <li class="nav-item">
-                            <a class="nav-link" href="index.html">
+                            <a class="nav-link" href="dashboard.php">
                             <i class="icon-grid menu-icon"></i>
                             <span class="menu-title">Dashboard</span>
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="order_history.php">
+                            <i class="icon-grid menu-icon"></i>
+                            <span class="menu-title">Data View 1</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="dataview.php">
+                            <i class="icon-grid menu-icon"></i>
+                            <span class="menu-title">Data View 2</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="index.html">
+                            <i class="icon-grid menu-icon"></i>
+                            <span class="menu-title">Sample Page</span>
+                            </a>
+                        </li>
+                        <!-- 
                         <li class="nav-item">
                             <a class="nav-link" data-toggle="collapse" href="#ui-basic" aria-expanded="false" aria-controls="ui-basic">
                             <i class="icon-layout menu-icon"></i>
@@ -250,6 +269,6 @@
                             <i class="icon-paper menu-icon"></i>
                             <span class="menu-title">Documentation</span>
                             </a>
-                        </li>
+                        </li> -->
                     </ul>
                 </nav>

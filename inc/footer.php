@@ -23,6 +23,7 @@
         <script src="js/Chart.roundedBarCharts.js"></script>
         <script src="vendors/select2/select2.min.js"></script>
         <script src="js/select2.js"></script>
+        <script src="js/chart.js"></script>
         
         <!-- End custom js for this page-->
 
@@ -109,7 +110,7 @@
                 });
             }
 
-            
+
         </script>
 
 

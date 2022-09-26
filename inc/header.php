@@ -171,13 +171,13 @@
                             <span class="menu-title">Data View 2</span>
                             </a>
                         </li>
-                        <li class="nav-item">
+                        <!--  <li class="nav-item">
                             <a class="nav-link" href="dashboard.html">
                             <i class="icon-grid menu-icon"></i>
                             <span class="menu-title">Sample Page</span>
                             </a>
                         </li>
-                        <!-- 
+                        
                         <li class="nav-item">
                             <a class="nav-link" data-toggle="collapse" href="#ui-basic" aria-expanded="false" aria-controls="ui-basic">
                             <i class="icon-layout menu-icon"></i>

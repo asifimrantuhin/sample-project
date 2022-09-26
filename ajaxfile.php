@@ -29,6 +29,13 @@ $searchQuery = " ";
 //     $searchQuery .= " and (profit_loss='".$searchByBotName."') ";
 // }
 
+if($searchValue != ''){
+    $searchQuery .= " and (datetime like '%".$searchValue."%' or 
+        account like '%".$searchValue."%' or 
+        botname like'%".$searchValue."%' or 
+        profit_loss like'%".$searchValue."%' ) ";
+}
+
 ## Total number of records without filtering
 $sel = mysqli_query($conn,"select count(*) as allcount from oanda_db");
 $records = mysqli_fetch_assoc($sel);

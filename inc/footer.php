@@ -24,94 +24,10 @@
         <script src="vendors/select2/select2.min.js"></script>
         <script src="js/select2.js"></script>
         <script src="js/chart.js"></script>
-        
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js" integrity="sha512-T/tUfKSV1bihCnd+MxKD0Hm1uBBroVYBOYSk1knyvQ9VyZJpc/ALb4P0r6ubwVPSGB2GvjeoMAJJImBG12TiaQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
         <!-- End custom js for this page-->
-
-        <script>
-            function searchFilter(page) {
-                var limit =5;
-                
-                var fromdate = $('#fromdate').val();
-                var todate = $('#todate').val();
-                var account = $('#accountname').val();
-                var botname = $('#botname').val();
-                var profitloss = $('#profitloss').val();
-
-                page_num = page?page:0;
-                limit = limit?limit:5;
-
-
-                $.ajax({
-                    type: 'POST',
-                    url: 'getData.php',
-                    data:'fromdate='+fromdate+'&todate='+todate+'&account='+account+'&botname='+botname+'&profitloss='+profitloss+'&page='+page_num+'&limit='+limit,
-                    beforeSend: function () {
-                        $('.loading-overlay').show();
-                    },
-                    success: function (html) {
-                        $('#dataContainer').html(html);
-                        $('.loading-overlay').fadeOut("slow");
-                    }
-                });
-            }
-
-            function searchFilterOrderHistory(page) {
-                var limit =5;
-
-                var fromdate = $('#fromdate').val();
-                var todate = $('#todate').val();
-                var type_id = $('#type_id').val();
-                var currency_id = $('#currency_id').val();
-                var profitloss = $('#profitloss').val();
-
-                page_num = page?page:0;
-                limit = limit?limit:5;
-
-
-                $.ajax({
-                    type: 'POST',
-                    url: 'get_order_history.php',
-                    data:'fromdate='+fromdate+'&todate='+todate+'&type_id='+type_id+'&currency_id='+currency_id+'&profitloss='+profitloss+'&page='+page_num+'&limit='+limit,
-                    beforeSend: function () {
-                        $('.loading-overlay').show();
-                    },
-                    success: function (html) {
-                        $('#dataContainer').html(html);
-                        $('.loading-overlay').fadeOut("slow");
-                    }
-                });
-            }
-
-
-            function searchFilterOrderHistoryOne(page) {
-                var limit =5;
-
-                var fromdate = $('#fromdate').val();
-                var todate = $('#todate').val();
-                var type_id = $('#type_id').val();
-                var currency_id = $('#currency_id').val();
-                var profitloss = $('#profitloss').val();
-
-                page_num = page?page:0;
-                limit = limit?limit:5;
-
-
-                $.ajax({
-                    type: 'POST',
-                    url: 'get_order_history_one.php',
-                    data:'fromdate='+fromdate+'&todate='+todate+'&type_id='+type_id+'&currency_id='+currency_id+'&profitloss='+profitloss+'&page='+page_num+'&limit='+limit,
-                    beforeSend: function () {
-                        $('.loading-overlay').show();
-                    },
-                    success: function (html) {
-                        $('#dataContainerOne').html(html);
-                        $('.loading-overlay').fadeOut("slow");
-                    }
-                });
-            }
-
-
-        </script>
 
 
         <script>
@@ -124,7 +40,11 @@
         $( document ).ajaxStop(function() {
             $('.loading-overlay').hide();
         });
+
+        
         </script>
+
+        
 
 
     </body>
